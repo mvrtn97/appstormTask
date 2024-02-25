@@ -14,11 +14,7 @@ import { Select } from 'antd';
 import { ListContainer } from './components/ListContainer';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-
-type FormFields = {
-  foodType?: string;
-  price?: number | null;
-};
+import { FormFields } from './models/models';
 
 function App() {
   const [value, setValue] = useState('');
@@ -29,6 +25,22 @@ function App() {
     { value: 'owoce', label: 'Owoce' }
   ];
 
+  const foodPrices = {
+    jabłka: 'price.applesPrice',
+    banany: 'price.bananasPrice',
+    pomarańcze: 'price.orangesPrice',
+    wiśnie: 'price.cherriesPrice',
+    marchewki: 'price.carrotsPrice',
+    pomidory: 'price.tomatoesPrice',
+    ogórki: 'price.cucumbersPrice',
+    cebule: 'price.onionsPrice'
+  };
+
+  const getFoodPriceName = (foodName: string | undefined) => {
+    const name = foodName?.toLowerCase();
+    return foodPrices[name as keyof typeof foodPrices] || 'price.onionsPrice';
+  };
+
   const schema = yup.object({
     foodType: yup.string().required('Typ jedzenia jest wymagany.'),
     price: yup.number().required('Cena jest wymagana.')
@@ -37,7 +49,8 @@ function App() {
   const form = useForm<FormFields>({
     resolver: yupResolver<FormFields>(schema),
     defaultValues: {
-      price: null
+      foodType: '',
+      price: undefined
     }
   });
 
@@ -49,16 +62,24 @@ function App() {
   };
 
   const addPriceHandler = (id: number) => {
-    const price = form.getValues('price');
-    if (price !== null) {
-      const updatedData = data.map((item) => {
-        if (item.id === id) {
-          return { ...item, price: Number(price) };
-        }
-        return item;
-      });
-      setData(updatedData);
-      resetField('price');
+    const item = data.find((item) => item.id === id);
+    if (item) {
+      const priceFieldName = getFoodPriceName(item.name);
+      const priceValue = form.getValues(priceFieldName as keyof FormFields);
+
+      if (priceValue && typeof priceValue === 'string') {
+        const updatedData = data.map((dataItem) => {
+          if (dataItem.id === id) {
+            return {
+              ...dataItem,
+              price: Number(priceValue)
+            };
+          }
+          return dataItem;
+        });
+        setData(updatedData);
+        resetField(priceFieldName as keyof FormFields);
+      }
     }
   };
 
@@ -106,7 +127,7 @@ function App() {
                 <>
                   <Label>{x.name}</Label>
                   <Controller
-                    name={'price'}
+                    name={getFoodPriceName(x.name) as 'price'}
                     control={control}
                     render={({ field }) => (
                       <Input

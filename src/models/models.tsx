@@ -23,3 +23,22 @@ export type HeaderProps = {
   setSelectedIds: (ids: number[]) => void;
   labelName?: string;
 };
+
+export type FormFields = {
+  foodType?: string;
+  price?: Vegetables | Fruits | number;
+};
+
+export type Vegetables = {
+  carrotsPrice: number;
+  tomatoesPrice: number;
+  cucumbersPrice: number;
+  onionsPrice: number;
+};
+
+export type Fruits = {
+  applesPrice: number;
+  bananasPrice: number;
+  orangesPrice: number;
+  cherriesPrice: number;
+};
